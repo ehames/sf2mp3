@@ -1,0 +1,39 @@
+#!/usr/local/bin/bash
+
+cue="$1"
+flac="$2"
+
+titles=titles
+
+#split flac according to cue
+cuebreakpoints "$cue"| shnsplit -o flac "$flac"
+
+# find album title
+album=`grep -m 1 TITLE "$cue"|sed 's/^.\{7\}//g'|sed 's/"//g'|sed 's/.$//'`
+
+# find artist
+artist=`grep -m 1 PERFORMER "$cue"|sed 's/^.\{11\}//g'|sed 's/"//g'|sed 's/.$//'`
+
+# find year
+year=`grep -m 1 "REM DATE" "$cue"|sed 's/^.\{9\}//g'|sed 's/"//g'|sed 's/.$//'`
+
+# find genre
+genre=`grep -m 1 "REM GENRE" "$cue"|sed 's/^.\{10\}//g'|sed 's/"//g'|sed 's/.$//'`
+
+# create a file with song titles
+sed '1,6'd "$cue"|grep TITLE|sed 's/^.\{11\}//g'|sed 's/"//g'|sed 's/.$//'>$titles
+
+nlines=`wc -l $titles |awk '{print $1}'`
+for i in $(seq -f "%02g" 1 $nlines); do
+	title=`sed -n ''$i'p' $titles`
+	echo $title
+	ffmpeg -i "split-track$i.flac" -acodec libmp3lame -ab 192k \
+		-metadata album="$album"   \
+		-metadata artist="$artist" \
+		-metadata date="$year"     \
+		-metadata genre="$genre"   \
+		-metadata title="$title"   \
+		-metadata track="$i"       \
+		$i-"$title".mp3
+done
+
