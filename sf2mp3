@@ -21,7 +21,7 @@ year=`grep -m 1 "REM DATE" "$cue"|sed 's/^.\{9\}//g'|sed 's/"//g'|sed 's/.$//'`
 genre=`grep -m 1 "REM GENRE" "$cue"|sed 's/^.\{10\}//g'|sed 's/"//g'|sed 's/.$//'`
 
 # create a file with song titles
-sed '1,6'd "$cue"|grep TITLE|sed 's/^.\{11\}//g'|sed 's/"//g'|sed 's/.$//'>$titles
+sed '1,6'd "$cue"|grep ' TITLE'|sed 's/^.\{11\}//g'|sed 's/"//g'|sed 's/.$//'>$titles
 
 nlines=`wc -l $titles |awk '{print $1}'`
 for i in $(seq -f "%02g" 1 $nlines); do
